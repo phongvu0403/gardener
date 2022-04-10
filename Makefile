@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-REGISTRY                               := eu.gcr.io/gardener-project/gardener
+REGISTRY                               := phongvu0403
 APISERVER_IMAGE_REPOSITORY             := $(REGISTRY)/apiserver
 CONTROLLER_MANAGER_IMAGE_REPOSITORY    := $(REGISTRY)/controller-manager
 SCHEDULER_IMAGE_REPOSITORY             := $(REGISTRY)/scheduler
@@ -23,7 +23,7 @@ GARDENLET_IMAGE_REPOSITORY             := $(REGISTRY)/gardenlet
 LANDSCAPER_GARDENLET_IMAGE_REPOSITORY  := $(REGISTRY)/landscaper-gardenlet
 PUSH_LATEST_TAG                        := false
 VERSION                                := $(shell cat VERSION)
-EFFECTIVE_VERSION                      := $(VERSION)-$(shell git rev-parse HEAD)
+EFFECTIVE_VERSION                      := $(VERSION)
 REPO_ROOT                              := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 LOCAL_GARDEN_LABEL                     := local-garden
 REMOTE_GARDEN_LABEL                    := remote-garden
@@ -31,7 +31,7 @@ ACTIVATE_SEEDAUTHORIZER                := false
 SEED_NAME                              := ""
 
 ifneq ($(strip $(shell git status --porcelain 2>/dev/null)),)
-	EFFECTIVE_VERSION := $(EFFECTIVE_VERSION)-dirty
+	EFFECTIVE_VERSION := $(EFFECTIVE_VERSION)
 endif
 
 #########################################
