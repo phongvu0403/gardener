@@ -300,7 +300,7 @@ func (c *validationContext) validateProjectMembership(a admission.Attributes) er
 	// this limit. The project name is a label on the namespace. If it is not found, the namespace name itself is used as
 	// project name. These checks should only be performed for CREATE operations (we do not want to reject changes to existing
 	// Shoots in case the limits are changed in the future).
-	var lengthLimit = 21
+	var lengthLimit = 100
 	if len(c.shoot.Name) == 0 && len(c.shoot.GenerateName) > 0 {
 		var randomLength = 5
 		if len(c.project.Name+c.shoot.GenerateName) > lengthLimit-randomLength {

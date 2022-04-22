@@ -34,7 +34,7 @@ func ValidateProject(project *core.Project) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	allErrs = append(allErrs, apivalidation.ValidateObjectMeta(&project.ObjectMeta, false, ValidateName, field.NewPath("metadata"))...)
-	maxProjectNameLength := 10
+	maxProjectNameLength := 100
 	if len(project.Name) > maxProjectNameLength {
 		allErrs = append(allErrs, field.TooLong(field.NewPath("metadata", "name"), project.Name, maxProjectNameLength))
 	}
@@ -166,7 +166,7 @@ var supportedRoles = sets.NewString(
 	core.ProjectMemberUserAccessManager,
 )
 
-const extensionRoleMaxLength = 20
+const extensionRoleMaxLength = 100
 
 // ValidateProjectMember validates the specification of a Project member.
 func ValidateProjectMember(member core.ProjectMember, fldPath *field.Path) field.ErrorList {
