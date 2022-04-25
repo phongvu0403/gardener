@@ -472,7 +472,7 @@ func ComputeTechnicalID(projectName string, shoot *gardencorev1beta1.Shoot) stri
 	}
 
 	// New clusters shall be created with the new technical id (double hyphens).
-	return fmt.Sprintf("%s--%s", TechnicalIDPrefix, shoot.Name)
+	return fmt.Sprintf("%s--%s--%s", TechnicalIDPrefix, projectName, shoot.Name)
 }
 
 // ConstructInternalClusterDomain constructs the internal base domain pof this shoot cluster.

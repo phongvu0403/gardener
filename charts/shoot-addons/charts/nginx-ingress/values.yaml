@@ -85,6 +85,7 @@ controller:
     ## providers supporting it
     ## Ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
     externalTrafficPolicy: ""
+    ingressDomain: "dashboard.ingress.trang.m.fke.fptcloud.com"
 
     targetPorts:
       http: 80

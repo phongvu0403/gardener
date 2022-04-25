@@ -238,12 +238,14 @@ func (b *Botanist) GenerateNginxIngressConfig() (map[string]interface{}, error) 
 	)
 
 	if enabled {
+		ingressDomain := "dashboard.ingress." + *b.Shoot.GetInfo().Spec.DNS.Domain
 		values = map[string]interface{}{
 			"controller": map[string]interface{}{
 				"customConfig": b.Shoot.GetInfo().Spec.Addons.NginxIngress.Config,
 				"service": map[string]interface{}{
 					"loadBalancerSourceRanges": b.Shoot.GetInfo().Spec.Addons.NginxIngress.LoadBalancerSourceRanges,
 					"externalTrafficPolicy":    *b.Shoot.GetInfo().Spec.Addons.NginxIngress.ExternalTrafficPolicy,
+					"ingressDomain":            ingressDomain,
 				},
 			},
 		}
