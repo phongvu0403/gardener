@@ -6,14 +6,14 @@
 images:
 # Gardener components
 - name: gardenlet
-  sourceRepository: github.com/gardener/gardener
-  repository: eu.gcr.io/gardener-project/gardener/gardenlet
+  sourceRepository: github.com/phongvu0403/gardener
+  repository: phongvu0403/gardenlet
 - name: gardener-seed-admission-controller
-  sourceRepository: github.com/gardener/gardener
-  repository: eu.gcr.io/gardener-project/gardener/seed-admission-controller
+  sourceRepository: github.com/phongvu0403/gardener
+  repository: phongvu0403/seed-admission-controller
 - name: gardener-resource-manager
-  sourceRepository: github.com/gardener/gardener
-  repository: eu.gcr.io/gardener-project/gardener/resource-manager
+  sourceRepository: github.com/phongvu0403/gardener
+  repository: phongvu0403/resource-manager
 
 # Seed bootstrap
 - name: pause-container
