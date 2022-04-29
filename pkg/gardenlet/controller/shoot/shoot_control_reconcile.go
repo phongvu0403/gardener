@@ -504,6 +504,11 @@ func (r *shootReconciler) runReconcileShootFlow(ctx context.Context, o *operatio
 			Dependencies: flow.NewTaskIDs(waitUntilTunnelConnectionExists),
 		})
 		_ = g.Add(flow.Task{
+			Name:         "Uploading Shoot kubeconfig to S3",
+			Fn:           flow.TaskFn(botanist.UploadKubeconfigToS3).SkipIf(o.Shoot.HibernationEnabled),
+			Dependencies: flow.NewTaskIDs(waitUntilTunnelConnectionExists),
+		})
+		_ = g.Add(flow.Task{
 			Name: "Deleting SNI resources if SNI is disabled",
 			Fn: flow.TaskFn(botanist.Shoot.Components.ControlPlane.KubeAPIServerSNI.Destroy).
 				RetryUntilTimeout(defaultInterval, defaultTimeout).

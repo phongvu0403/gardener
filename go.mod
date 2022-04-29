@@ -7,6 +7,7 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/ahmetb/gen-crd-api-reference-docs v0.2.0
+	github.com/aws/aws-sdk-go v1.19.41
 	github.com/bronze1man/yaml2json v0.0.0-20201022121239-82e774ec909d
 	github.com/coreos/go-systemd/v22 v22.3.2
 	github.com/envoyproxy/go-control-plane v0.9.9-0.20210217033140-668b12f5399d

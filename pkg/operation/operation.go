@@ -17,6 +17,9 @@ package operation
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"strings"
 
 	gardencorev1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
@@ -48,6 +51,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 // NewBuilder returns a new Builder.
@@ -764,4 +769,112 @@ func (o *Operation) DeleteSecret(key string) {
 	defer o.secretsMutex.Unlock()
 
 	delete(o.secrets, key)
+}
+
+// UploadKubeconfigToS3 uploads kubeconfig of shoot cluster to S3
+func (o *Operation) UploadKubeconfigToS3(ctx context.Context) error {
+	bucketName, endPoint, region := o.GetS3ConfigmapInfo(ctx)
+	id, secret := o.GetS3SecretInfo(ctx)
+	bucket := aws.String(bucketName)
+	shootName := o.Shoot.GetInfo().Name
+	project := o.Garden.Project.Name
+	pathFile := project + "/" + shootName + "/kubeconfig"
+	pathKubeconfigFile := aws.String(pathFile)
+
+	// Configure S3 Server
+	s3Config := &aws.Config{
+		Credentials:      credentials.NewStaticCredentials(id, secret, ""),
+		Endpoint:         aws.String(endPoint),
+		Region:           aws.String(region),
+		DisableSSL:       aws.Bool(true),
+		S3ForcePathStyle: aws.Bool(true),
+	}
+	newSession := session.New(s3Config)
+
+	s3Client := s3.New(newSession)
+
+	cparams := &s3.CreateBucketInput{
+		Bucket: bucket, // Required
+	}
+
+	// Create a new bucket using the CreateBucket call.
+	_, err := s3Client.CreateBucket(cparams)
+	if err != nil {
+		// Message from an error.
+		o.Logger.Errorf("Could not create bucket: %s", err.Error())
+		return err
+	}
+
+	kubeconfigData := o.GetShootKubeconfigData(ctx)
+
+	// Upload a new object "testobject" with the string "Hello World!" to our "newbucket".
+	_, err = s3Client.PutObject(&s3.PutObjectInput{
+		Body:   strings.NewReader(kubeconfigData),
+		Bucket: bucket,
+		Key:    pathKubeconfigFile,
+	})
+
+	if err != nil {
+		o.Logger.Errorf("Failed to upload data to %s/%s, %s\n", *bucket, *pathKubeconfigFile, err.Error())
+		return err
+	}
+
+	o.Logger.Printf("Successfully created bucket %s and uploaded data with key %s\n", *bucket, *pathKubeconfigFile)
+
+	return nil
+}
+
+// GetShootKubeconfigData gets data of shoot's kubeconfig file
+func (o *Operation) GetShootKubeconfigData(ctx context.Context) string {
+	var kubeconfigData string
+	shootName := o.Shoot.GetInfo().Name
+	kubeconfigSecretName := shootName + ".kubeconfig"
+	kubeconfigSecret, err := o.K8sGardenClient.Kubernetes().CoreV1().Secrets(o.Shoot.GetInfo().Namespace).Get(ctx, kubeconfigSecretName, metav1.GetOptions{})
+	if err != nil {
+		o.Logger.Errorf("Failed to get secret: %s\n", err.Error())
+	}
+	for k, v := range kubeconfigSecret.Data {
+		if k == "kubeconfig" {
+			kubeconfigData = string(v)
+		}
+	}
+	return kubeconfigData
+}
+
+// GetS3SecretInfo gets info of s3 secret
+func (o *Operation) GetS3SecretInfo(ctx context.Context) (string, string) {
+	var id, secret string
+	s3Secret, err := o.K8sGardenClient.Kubernetes().CoreV1().Secrets("garden").Get(ctx, "s3-secret", metav1.GetOptions{})
+	if err != nil {
+		o.Logger.Errorf("Could not get secret S3 from garden cluster: %s", err.Error())
+	}
+	for k, v := range s3Secret.Data {
+		if k == "id" {
+			id = string(v)
+		}
+		if k == "secret" {
+			secret = string(v)
+		}
+	}
+	return id, secret
+}
+
+func (o *Operation) GetS3ConfigmapInfo(ctx context.Context) (string, string, string) {
+	var bucketName, endPoint, region string
+	configmap, err := o.K8sGardenClient.Kubernetes().CoreV1().ConfigMaps("garden").Get(ctx, "s3-configmap", metav1.GetOptions{})
+	if err != nil {
+		o.Logger.Errorf("Could not get configmap S3 from garden cluster: %s", err.Error())
+	}
+	for k, v := range configmap.Data {
+		if k == "bucket" {
+			bucketName = v
+		}
+		if k == "endpoint" {
+			endPoint = v
+		}
+		if k == "region" {
+			region = v
+		}
+	}
+	return bucketName, endPoint, region
 }
